@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+  backend:
+    build: .
+    container_name: test_service_backend
+    command: /entrypoint.sh
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8005:8000"
+    env_file:
+      - .env.dev   # 👈 nuevo archivo para dev
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    container_name: test_service_db
+    restart: always
+    environment:
+      POSTGRES_DB: test_service_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres_data_test:/var/lib/postgresql/data
+
+volumes:
+  postgres_data_test:
