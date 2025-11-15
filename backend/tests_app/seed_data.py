@@ -1,27 +1,19 @@
-from django.db import transaction
 from tests_app.models import Test, Pregunta, OpcionRespuesta, CarreraSugerida
+from django.db import transaction
 
 @transaction.atomic
 def seed_riasec():
-    # 🔍 1) Ver si el test ya existe
-    test, created = Test.objects.get_or_create(
+    # 🧭 Crear test base
+    test = Test.objects.create(
         titulo="Test RIASEC de Holland",
-        defaults={
-            "descripcion": (
-                "Evalúa tus intereses vocacionales en seis áreas: "
-                "Realista (R), Investigador (I), Artístico (A), Social (S), "
-                "Emprendedor (E) y Convencional (C). "
-                "El test ayuda a identificar tus inclinaciones profesionales "
-                "para orientar tu elección de carrera."
-            ),
-            "duracion_minutos": 20,
-            "creador_id": "00000000-0000-0000-0000-000000000000",
-        },
+        descripcion=(
+            "Evalúa tus intereses vocacionales en seis áreas: "
+            "Realista (R), Investigador (I), Artístico (A), Social (S), Emprendedor (E) y Convencional (C). "
+            "El test ayuda a identificar tus inclinaciones profesionales para orientar tu elección de carrera."
+        ),
+        duracion_minutos=20,
+        creador_id="00000000-0000-0000-0000-000000000000"
     )
-
-    if not created:
-        print("⚠️ Test RIASEC ya existía. No se creó uno nuevo.")
-        return  # Importante: salimos para no duplicar preguntas/opciones
 
     preguntas_por_area = {
         "Realista": [
@@ -70,7 +62,7 @@ def seed_riasec():
                 texto_pregunta=f"[{area}] {texto}",
                 tipo="escala_likert",
                 orden=orden,
-                peso=1.0,
+                peso=1.0
             )
             opciones = [
                 ("Nada de acuerdo", 1),
@@ -83,7 +75,7 @@ def seed_riasec():
                 OpcionRespuesta.objects.create(
                     pregunta=p,
                     texto_opcion=txt,
-                    puntuacion=val,
+                    puntuacion=val
                 )
             orden += 1
 
@@ -92,6 +84,8 @@ def seed_riasec():
 
 @transaction.atomic
 def seed_carreras():
+    from tests_app.models import CarreraSugerida
+
     carreras_por_area = {
         "Realista": [
             ("Ingeniería Mecánica", "Diseño, operación y mantenimiento de máquinas e instalaciones."),
@@ -127,19 +121,13 @@ def seed_carreras():
 
     for area, carreras in carreras_por_area.items():
         for nombre, descripcion in carreras:
-            obj, created = CarreraSugerida.objects.get_or_create(
+            CarreraSugerida.objects.create(
                 nombre=nombre,
-                defaults={
-                    "descripcion": descripcion,
-                    "area_conocimiento": area,
-                },
+                descripcion=descripcion,
+                area_conocimiento=area
             )
-            if created:
-                print(f"✅ Carrera creada: {nombre} ({area})")
-            else:
-                print(f"ℹ️ Carrera ya existía: {nombre} ({area})")
 
-    print("✅ Carreras sugeridas creadas/validada por área RIASEC.")
+    print("✅ Carreras sugeridas creadas por área RIASEC.")
 
 
 def seed_all():
@@ -148,5 +136,5 @@ def seed_all():
     print("\n🎯 Base de datos inicial del servicio de test completada exitosamente.")
 
 
-# ❌ IMPORTANTE: ya NO se llama seed_all() automáticamente aquí.
-# Lo vas a invocar tú desde el entrypoint o manualmente.
+# 🚀 Ejecutar automáticamente al importar desde el entrypoint
+seed_all()
